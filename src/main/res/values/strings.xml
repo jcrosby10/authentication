@@ -1,3 +1,9 @@
 <resources>
     <string name="title_activity_authentication">AuthenticationActivity</string>
+
+    <string name="error_title">ERROR</string>
+    <string name="error_save_player">You successfully logged in, but there was an error saving your information to the database. Try log out and log back in again.</string>
+    <string name="error_sign_out">There was an error signing out. Please try again.</string>
+
+    <string name="button_ok">OK</string>
 </resources>

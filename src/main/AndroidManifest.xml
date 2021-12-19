@@ -3,11 +3,7 @@
     package="com.huntergaming.authentication">
 
     <application>
-        <activity
-            android:name=".ui.AuthenticationActivity"
-            android:exported="true"
-            android:label="@string/title_activity_authentication"
-            android:theme="@style/Theme.ClassicSolitaire.NoActionBar" />
+
     </application>
 
 </manifest>

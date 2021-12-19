@@ -1,7 +1,7 @@
 package com.huntergaming.authentication.di
 
 import com.huntergaming.authentication.Authentication
-import com.huntergaming.authentication.GooglePlayGamesAuth
+import com.huntergaming.authentication.HunterGamingAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,5 +12,5 @@ import dagger.hilt.components.SingletonComponent
 class Module {
 
     @Provides
-    internal fun provideGooglePlayGamesAuth(auth: GooglePlayGamesAuth): Authentication = auth
+    internal fun provideGooglePlayGamesAuth(auth: HunterGamingAuth): Authentication = auth
 }
