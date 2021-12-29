@@ -50,18 +50,16 @@ android {
 dependencies {
     implementation(project(mapOf("path" to ":gamedata")))
     implementation(project(mapOf("path" to ":ui")))
+    implementation(project(mapOf("path" to ":web")))
 
     implementation(platform("com.google.firebase:firebase-bom:29.0.3"))
     api("com.google.firebase:firebase-firestore-ktx")
     api("com.google.firebase:firebase-auth-ktx")
 
-    implementation("com.google.android.gms:play-services-auth:20.0.0")
     implementation("com.google.dagger:hilt-android:2.40.5")
     kapt("com.google.dagger:hilt-compiler:2.40.5")
     implementation("com.google.android.material:material:1.4.0")
 
-    implementation("androidx.activity:activity-compose:1.4.0")
-    implementation("androidx.activity:activity-ktx:1.4.0")
     implementation("androidx.appcompat:appcompat:1.4.0")
     implementation("androidx.compose.ui:ui:1.0.5")
     implementation("androidx.compose.ui:ui-tooling-preview:1.0.5")
