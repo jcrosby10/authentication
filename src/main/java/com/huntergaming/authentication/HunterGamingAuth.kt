@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.ktx.Firebase
 import com.huntergaming.gamedata.DataRequestState
 import com.huntergaming.gamedata.PlayerRepo
@@ -12,7 +13,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
@@ -44,11 +44,9 @@ internal class HunterGamingAuth @Inject constructor(
                                 when (state) {
                                     is DataRequestState.Success<*> -> {
                                         createAccountState.value = CreateAccountState.AccountCreated
-                                        cancel()
                                     }
                                     is DataRequestState.Error -> {
                                         createAccountState.value = CreateAccountState.Error(context.getString(R.string.error_save_player))
-                                        cancel()
                                     }
                                     else -> {}
                                 }
@@ -97,7 +95,6 @@ internal class HunterGamingAuth @Inject constructor(
             }
     }
 
-
     override suspend fun logout() {
         loggedInStatus.emit(LoginState.LogoutInProgress)
 
@@ -106,11 +103,6 @@ internal class HunterGamingAuth @Inject constructor(
     }
 
     override fun isLoggedIn(): Boolean = Firebase.auth.currentUser != null
-
-    override suspend fun updateProfileInformation(firstname: String, lastname: String, email: String) {
-        // if parameter == "" then dont update it
-        TODO("Not yet implemented")
-    }
 
     override suspend fun changePassword() {
         TODO("Not yet implemented")
@@ -127,6 +119,12 @@ internal class HunterGamingAuth @Inject constructor(
         playerRepo.create(Player(id = Firebase.auth.currentUser?.uid!!, name = name, email =  email)).collect {
             emit(it)
         }
+
+        val profileUpdate = userProfileChangeRequest {
+            displayName = name
+        }
+
+        Firebase.auth.currentUser?.updateProfile(profileUpdate)
     }
 }
 
@@ -140,7 +138,6 @@ interface Authentication {
     fun isLoggedIn(): Boolean
     suspend fun logout()
 
-    suspend fun updateProfileInformation(firstname: String = "", lastname: String = "", email: String = "")
     suspend fun changePassword()
 
     fun isValidField(value: String): Boolean
