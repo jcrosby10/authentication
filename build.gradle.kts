@@ -58,9 +58,9 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.40.5")
     kapt("com.google.dagger:hilt-compiler:2.40.5")
-    implementation("com.google.android.material:material:1.4.0")
+    implementation("com.google.android.material:material:1.5.0")
 
-    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("androidx.compose.ui:ui:1.0.5")
     implementation("androidx.compose.ui:ui-tooling-preview:1.0.5")
     implementation("androidx.compose.ui:ui-tooling:1.0.5")

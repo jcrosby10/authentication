@@ -24,12 +24,18 @@ internal class HunterGamingAuth @Inject constructor(
     private val playerRepo: PlayerRepo
 ): Authentication {
 
+    // COMPANION OBJECTS
+
     companion object {
         private const val LOG_TAG = "HunterGamingAuth"
     }
 
+    // OVERRIDDEN PROPERTIES
+
     override val loggedInStatus: MutableStateFlow<LoginState> = MutableStateFlow(LoginState.LoggedOut)
     override val createAccountState: MutableStateFlow<CreateAccountState> = MutableStateFlow(CreateAccountState.Initial)
+
+    // OVERRIDDEN FUNCTIONS
 
     override suspend fun createAccount(name: String, email: String, password: String) {
         createAccountState.emit(CreateAccountState.InProgress)
@@ -115,8 +121,10 @@ internal class HunterGamingAuth @Inject constructor(
     override fun isValidPassword(password: String): Boolean =
         password.isNotEmpty() && password.length >= 10 && password.contains(Regex("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)"))
 
+    // PRIVATE FUNCTIONS
+
     private suspend fun savePlayer(name: String, email: String): Flow<DataRequestState> = flow {
-        playerRepo.create(Player(id = Firebase.auth.currentUser?.uid!!, name = name, email =  email)).collect {
+        playerRepo.create(id = Firebase.auth.currentUser?.uid!!, name = name, email =  email).collect {
             emit(it)
         }
 
@@ -127,6 +135,8 @@ internal class HunterGamingAuth @Inject constructor(
         Firebase.auth.currentUser?.updateProfile(profileUpdate)
     }
 }
+
+// INTERFACES/CLASSES
 
 interface Authentication {
     val loggedInStatus: MutableStateFlow<LoginState>
