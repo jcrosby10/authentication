@@ -25,7 +25,7 @@
     <string name="create_account_verification_failed">Sending the verification email failed.</string>
     <string name="create_account_canceled">Creating your account was canceled.</string>
     <string name="create_account_failed">Creating your account failed.</string>
-    <string name="create_account_password_rules">Passwords must be at least 10 characters, contain at least one lower case letter, at least one upper case letter and at least one number.</string>
+    <string name="create_account_password_rules">Passwords must be at least 10 characters, contain at least one lower case letter, at least one upper case letter and at least one number, and at least one special character.</string>
 
     <string name="login_canceled">Login was canceled.</string>
     <string name="login_not_verified">Check your email for to verify your email address before logging in.</string>

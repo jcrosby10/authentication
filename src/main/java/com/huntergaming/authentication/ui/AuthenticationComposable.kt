@@ -3,11 +3,17 @@ package com.huntergaming.authentication.ui
 import android.content.Context
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,8 +24,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
 import com.huntergaming.authentication.CreateAccountState
 import com.huntergaming.authentication.LoginState
@@ -28,9 +36,7 @@ import com.huntergaming.authentication.viewmodel.AuthenticationViewModel
 import com.huntergaming.ui.composable.HunterGamingAlertDialog
 import com.huntergaming.ui.composable.HunterGamingBackgroundImage
 import com.huntergaming.ui.composable.HunterGamingButton
-import com.huntergaming.ui.composable.HunterGamingColumn
 import com.huntergaming.ui.composable.HunterGamingFieldRow
-import com.huntergaming.ui.composable.HunterGamingRow
 import com.huntergaming.ui.composable.HunterGamingSmallCaptionText
 import com.huntergaming.ui.uitl.CommunicationAdapter
 import kotlinx.coroutines.launch
@@ -164,44 +170,42 @@ private fun Login(
     createAccount: MutableState<Boolean>,
     authViewModel: AuthenticationViewModel
 ) {
+
     val isError = remember { mutableStateOf(true) }
 
-    HunterGamingColumn(
+    Column(
         modifier = Modifier
-            .fillMaxSize()
+            .width(600.dp)
+            .height(350.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
 
         val email = remember { mutableStateOf(TextFieldValue(text =  "")) }
         val password = remember { mutableStateOf(TextFieldValue(text =  "")) }
 
-        HunterGamingRow(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
+        HunterGamingFieldRow(
+            fieldNameString = R.string.email_input,
+            hintString = R.string.email_input,
+            onValueChanged = {},
+            textState = email,
+            isError = isError,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        )
+
+        HunterGamingFieldRow(
+            fieldNameString = R.string.password_input,
+            hintString = R.string.password_input,
+            onValueChanged = {},
+            textState = password,
+            isPassword = true,
+            isError = isError,
+            horizontalArrangement = Arrangement.Center
+        )
+
+        Row(modifier = Modifier
+            .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-
-            HunterGamingFieldRow(
-                fieldNameString = R.string.email_input,
-                hintString = R.string.email_input,
-                onValueChanged = {},
-                textState = email,
-                isError = isError.value
-            )
-
-            val hidePassword = remember { mutableStateOf(true) }
-            HunterGamingFieldRow(
-                fieldNameString = R.string.password_input,
-                hintString = R.string.password_input,
-                onValueChanged = {},
-                textState = password,
-                isPassword = hidePassword,
-                isError = isError.value
-            )
-        }
-
-        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacer_size)))
-
-        HunterGamingRow(modifier = Modifier
-            .align(Alignment.CenterHorizontally)) {
 
             val coroutineScope = rememberCoroutineScope()
 
@@ -211,8 +215,6 @@ private fun Login(
                 onClick = { coroutineScope.launch { authViewModel.login(email.value.text, password.value.text) } },
                 text = R.string.button_login
             )
-
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacer_size)))
 
             HunterGamingButton(
                 modifier = Modifier
@@ -225,11 +227,13 @@ private fun Login(
 }
 
 @Composable
-private fun CreateAccount(authViewModel: AuthenticationViewModel) {
+fun CreateAccount(authViewModel: AuthenticationViewModel) {
 
-    HunterGamingColumn(
+    Column(
         modifier = Modifier
-            .fillMaxSize()
+            .width(600.dp)
+            .height(350.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
 
         val name = remember { mutableStateOf(TextFieldValue(text =  "")) }
@@ -239,44 +243,35 @@ private fun CreateAccount(authViewModel: AuthenticationViewModel) {
         val password = remember { mutableStateOf(TextFieldValue(text =  "")) }
         val isPasswordError = remember { mutableStateOf(true) }
 
-        HunterGamingRow(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-        ) {
+        HunterGamingFieldRow(
+            fieldNameString = R.string.name_input,
+            hintString = R.string.name_input,
+            onValueChanged = { isNameError.value = authViewModel.isValidField(it.text) != true },
+            textState = name,
+            isError = isNameError,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        )
 
-            HunterGamingFieldRow(
-                fieldNameString = R.string.name_input,
-                hintString = R.string.name_input,
-                onValueChanged = { isNameError.value = authViewModel.isValidField(it.text) != true },
-                textState = name,
-                isError = isNameError.value
-            )
-        }
+        HunterGamingFieldRow(
+            fieldNameString = R.string.email_input,
+            hintString = R.string.email_input,
+            onValueChanged = { isEmailError.value = authViewModel.isValidEmail(it.text) != true },
+            textState = email,
+            isError = isEmailError,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        )
 
-        HunterGamingRow(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-        ) {
-
-            HunterGamingFieldRow(
-                fieldNameString = R.string.email_input,
-                hintString = R.string.email_input,
-                onValueChanged = { isEmailError.value = authViewModel.isValidEmail(it.text) != true },
-                textState = email,
-                isError = isEmailError.value
-            )
-
-            val hidePassword = remember { mutableStateOf(true) }
-            HunterGamingFieldRow(
-                fieldNameString = R.string.password_input,
-                hintString = R.string.password_input,
-                label = { HunterGamingSmallCaptionText(text = R.string.create_account_password_rules) },
-                onValueChanged = { isPasswordError.value = authViewModel.isValidPassword(it.text) != true },
-                textState = password,
-                isPassword = hidePassword,
-                isError = isPasswordError.value
-            )
-        }
+        HunterGamingFieldRow(
+            fieldNameString = R.string.password_input,
+            hintString = R.string.password_input,
+            onValueChanged = { isPasswordError.value = authViewModel.isValidPassword(it.text) != true },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            textState = password,
+            isPassword = true,
+            isError = isPasswordError,
+            horizontalArrangement = Arrangement.Center
+        )
+        HunterGamingSmallCaptionText(text = R.string.create_account_password_rules)
 
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacer_size)))
 
