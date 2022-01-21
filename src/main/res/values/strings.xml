@@ -8,7 +8,7 @@
     <string name="error_no_internet">Please verify that you have a connection to the internet and try again.</string>
     <string name="error_title">ERROR</string>
     <string name="error_sign_out">There was an error signing out. Please try again.</string>
-    <string name="error_login">There was an error logging you in. Please try again.</string>
+    <string name="error_login">There was an error logging you in. Make sure you are connected to the internet and have verified your email address and try again.</string>
 
     <string name="button_create_account">CREATE ACCOUNT</string>
     <string name="button_login">LOGIN</string>

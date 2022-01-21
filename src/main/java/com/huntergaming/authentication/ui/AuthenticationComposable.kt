@@ -24,10 +24,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
 import com.huntergaming.authentication.CreateAccountState
 import com.huntergaming.authentication.LoginState
@@ -39,9 +39,11 @@ import com.huntergaming.ui.composable.HunterGamingButton
 import com.huntergaming.ui.composable.HunterGamingFieldRow
 import com.huntergaming.ui.composable.HunterGamingSmallCaptionText
 import com.huntergaming.ui.uitl.CommunicationAdapter
+import com.huntergaming.ui.uitl.Message
 import kotlinx.coroutines.launch
 
 private const val LOG_TAG = "AuthenticationComposable"
+const val NAV_TO_MAIN_MENU = "mainMenu"
 
 @Composable
 fun Authentication(
@@ -57,13 +59,6 @@ fun Authentication(
 
     val showProgressIndicator = remember { mutableStateOf(false) }
 
-    HunterGamingAlertDialog(
-        onConfirm = {},
-        title = titleState.value,
-        text = textState.value,
-        state = statusDialogState
-    )
-
     // wont recompose unless the key changes
     LaunchedEffect(key1 = true) {
         communicationAdapter.error.observe(owner) {
@@ -72,6 +67,8 @@ fun Authentication(
             statusDialogState.value = true
         }
     }
+
+    val createAccount = remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         authViewModel.loggedInState?.observe(owner) {
@@ -87,11 +84,16 @@ fun Authentication(
                     textState.value = context.getString(R.string.create_account_verification_sent)
                     showProgressIndicator.value = false
                 }
+
                 LoginState.InProgress -> showProgressIndicator.value = true
                 LoginState.LogoutInProgress -> showProgressIndicator.value = true
 
-                LoginState.LoggedIn -> showProgressIndicator.value = false
-                LoginState.LoggedOut -> showProgressIndicator.value = false // this is the initial state dont handle anything that cant be also done initially
+                LoginState.LoggedIn -> {
+                    showProgressIndicator.value = false
+                    communicationAdapter.message.value = Message(NAV_TO_MAIN_MENU)
+                }
+
+                LoginState.LoggedOut -> showProgressIndicator.value = false
 
                 is LoginState.Failed -> {
                     showProgressIndicator.value = false
@@ -99,6 +101,10 @@ fun Authentication(
                 }
                 is LoginState.Error -> {
                     showProgressIndicator.value = false
+                    titleState.value = R.string.dialog_error_title
+                    textState.value = context.getString(R.string.error_login)
+                    statusDialogState.value = true
+
                     Log.e(LOG_TAG, it.message)
                 }
             }
@@ -140,6 +146,8 @@ fun Authentication(
                     statusDialogState.value = true
                     showProgressIndicator.value = false
 
+                    createAccount.value = false
+
                     coroutineScope.launch { authViewModel.logout() }
                 }
             }
@@ -153,8 +161,6 @@ fun Authentication(
 
         HunterGamingBackgroundImage(image = R.drawable.bg)
 
-        val createAccount = remember { mutableStateOf(false) }
-
         if (createAccount.value) CreateAccount(authViewModel = authViewModel)
         else Login(
             createAccount = createAccount,
@@ -162,6 +168,13 @@ fun Authentication(
         )
 
         if (showProgressIndicator.value) CircularProgressIndicator()
+        HunterGamingAlertDialog(
+            onConfirm = {},
+            title = titleState.value,
+            text = textState.value,
+            state = statusDialogState,
+            backgroundImage = R.drawable.dialog_bg
+        )
     }
 }
 
@@ -175,8 +188,8 @@ private fun Login(
 
     Column(
         modifier = Modifier
-            .width(600.dp)
-            .height(350.dp),
+            .width(dimensionResource(id = R.dimen.auth_width))
+            .height(dimensionResource(id = R.dimen.auth_height)),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
 
@@ -189,7 +202,8 @@ private fun Login(
             onValueChanged = {},
             textState = email,
             isError = isError,
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
         HunterGamingFieldRow(
@@ -199,7 +213,8 @@ private fun Login(
             textState = password,
             isPassword = true,
             isError = isError,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
         Row(modifier = Modifier
@@ -231,8 +246,8 @@ fun CreateAccount(authViewModel: AuthenticationViewModel) {
 
     Column(
         modifier = Modifier
-            .width(600.dp)
-            .height(350.dp),
+            .width(dimensionResource(id = R.dimen.auth_width))
+            .height(dimensionResource(id = R.dimen.auth_height)),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
 
@@ -249,7 +264,11 @@ fun CreateAccount(authViewModel: AuthenticationViewModel) {
             onValueChanged = { isNameError.value = authViewModel.isValidField(it.text) != true },
             textState = name,
             isError = isNameError,
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words
+            )
         )
 
         HunterGamingFieldRow(
@@ -258,7 +277,8 @@ fun CreateAccount(authViewModel: AuthenticationViewModel) {
             onValueChanged = { isEmailError.value = authViewModel.isValidEmail(it.text) != true },
             textState = email,
             isError = isEmailError,
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
         HunterGamingFieldRow(
