@@ -10,6 +10,7 @@ import com.huntergaming.gamedata.DataRequestState
 import com.huntergaming.gamedata.PlayerRepo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 internal class HunterGamingAuth @Inject constructor(
     @ApplicationContext private var context: Context,
@@ -122,9 +124,19 @@ internal class HunterGamingAuth @Inject constructor(
 
     override fun isLoggedIn(): Boolean = Firebase.auth.currentUser != null
 
-    override suspend fun changePassword() {
-        TODO("Not yet implemented")
-    }
+    override suspend fun changePassword(password: String): UpdateState =
+
+        suspendCancellableCoroutine { cont ->
+            Firebase.auth.currentUser?.updatePassword(password)
+                ?.addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        cont.resume(UpdateState.SUCCESS)
+                    }
+                    else {
+                        cont.resume(UpdateState.FAILED)
+                    }
+                }
+        }
 
     override fun isValidField(value: String): Boolean = value.isNotEmpty()
 
@@ -162,7 +174,7 @@ interface Authentication {
     fun isLoggedIn(): Boolean
     suspend fun logout()
 
-    suspend fun changePassword()
+    suspend fun changePassword(password: String): UpdateState
 
     fun isValidField(value: String): Boolean
     fun isValidEmail(email: String): Boolean
@@ -190,4 +202,8 @@ sealed class LoginState {
     object LoggedOut : LoginState()
     class Failed(val message: String) : LoginState()
     class Error(val message: String) : LoginState()
+}
+
+enum class UpdateState {
+    SUCCESS, FAILED
 }

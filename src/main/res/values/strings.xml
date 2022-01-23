@@ -19,6 +19,9 @@
     <string name="password_input">Password:</string>
 
     <string name="content_description_not_needed">@null</string>
+    <string name="content_description_login">Login</string>
+    <string name="content_description_logout">Logout</string>
+    <string name="content_description_create_account">Create Account</string>
 
     <string name="create_account_verification_sent">An email was sent. Check your email for verification to complete the create account process.</string>
     <string name="create_account_verification_canceled">Sending the verification email was canceled.</string>

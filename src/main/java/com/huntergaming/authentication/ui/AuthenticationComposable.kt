@@ -3,6 +3,7 @@ package com.huntergaming.authentication.ui
 import android.content.Context
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Login
+import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material.icons.twotone.Login
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -23,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,6 +59,10 @@ fun Authentication(
     context: Context,
     communicationAdapter: CommunicationAdapter
 ) {
+
+    if (authViewModel.isLoggedIn() == true) {
+        communicationAdapter.message.value = Message(NAV_TO_MAIN_MENU)
+    }
 
     val statusDialogState = remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf("") }
@@ -168,6 +179,7 @@ fun Authentication(
         )
 
         if (showProgressIndicator.value) CircularProgressIndicator()
+
         HunterGamingAlertDialog(
             onConfirm = {},
             title = titleState.value,
@@ -177,6 +189,8 @@ fun Authentication(
         )
     }
 }
+
+// PRIVATE FUNCTIONS
 
 @Composable
 private fun Login(
@@ -228,21 +242,23 @@ private fun Login(
                 modifier = Modifier
                     .padding(all = dimensionResource(id = R.dimen.padding_large)),
                 onClick = { coroutineScope.launch { authViewModel.login(email.value.text, password.value.text) } },
-                text = R.string.button_login
+                icon = if (isSystemInDarkTheme()) Icons.TwoTone.Login else Icons.Outlined.Login,
+                contentDescription = R.string.content_description_login
             )
 
             HunterGamingButton(
                 modifier = Modifier
                     .padding(all = dimensionResource(id = R.dimen.padding_large)),
                 onClick = { createAccount.value = true },
-                text = R.string.button_create_account
+                icon = if (isSystemInDarkTheme()) Icons.TwoTone.Add else Icons.Outlined.Add,
+                contentDescription = R.string.content_description_create_account
             )
         }
     }
 }
 
 @Composable
-fun CreateAccount(authViewModel: AuthenticationViewModel) {
+private fun CreateAccount(authViewModel: AuthenticationViewModel) {
 
     Column(
         modifier = Modifier
@@ -309,18 +325,21 @@ fun CreateAccount(authViewModel: AuthenticationViewModel) {
                     )
                 }
             },
-            text = R.string.button_create_account,
-            isEnabled = !isNameError.value && !isEmailError.value && !isPasswordError.value
+            icon = if (isSystemInDarkTheme()) Icons.TwoTone.Add else Icons.Outlined.Add,
+            isEnabled = !isNameError.value && !isEmailError.value && !isPasswordError.value,
+            contentDescription = R.string.content_description_create_account
         )
     }
 }
+
+// PREVIEWS
 
 @Preview(showBackground = true, widthDp = 1280, heightDp = 720)
 @Composable
 private fun DefaultPreview() {
     Authentication(
         owner = ComponentActivity(),
-        authViewModel = AuthenticationViewModel(null, null),
+        authViewModel = AuthenticationViewModel(null, LocalContext.current),
         context = ComponentActivity(),
         communicationAdapter = CommunicationAdapter()
     )
@@ -331,7 +350,7 @@ private fun DefaultPreview() {
 private fun DefaultPreview2() {
     Authentication(
         owner = ComponentActivity(),
-        authViewModel = AuthenticationViewModel(null, null),
+        authViewModel = AuthenticationViewModel(null, LocalContext.current),
         context = ComponentActivity(),
         communicationAdapter = CommunicationAdapter()
     )
@@ -342,7 +361,7 @@ private fun DefaultPreview2() {
 private fun DefaultPreview3() {
     Authentication(
         owner = ComponentActivity(),
-        authViewModel = AuthenticationViewModel(null, null),
+        authViewModel = AuthenticationViewModel(null, LocalContext.current),
         context = ComponentActivity(),
         communicationAdapter = CommunicationAdapter()
     )
@@ -353,7 +372,7 @@ private fun DefaultPreview3() {
 private fun DefaultPreview4() {
     Authentication(
         owner = ComponentActivity(),
-        authViewModel = AuthenticationViewModel(null, null),
+        authViewModel = AuthenticationViewModel(null, LocalContext.current),
         context = ComponentActivity(),
         communicationAdapter = CommunicationAdapter()
     )
