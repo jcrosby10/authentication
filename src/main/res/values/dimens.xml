@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="spacer_size">25dp</dimen>
+    <dimen name="spacer_size_large">45dp</dimen>
 
     <dimen name="auth_width">600dp</dimen>
     <dimen name="auth_height">350dp</dimen>
