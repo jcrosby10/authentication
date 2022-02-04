@@ -7,6 +7,7 @@ import androidx.lifecycle.asLiveData
 import com.huntergaming.authentication.Authentication
 import com.huntergaming.authentication.CreateAccountState
 import com.huntergaming.authentication.LoginState
+import com.huntergaming.authentication.UpdateState
 import com.huntergaming.web.isConnected
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,9 +45,12 @@ class AuthenticationViewModel @Inject constructor(
 
     fun isLoggedIn() = hunterGamingAuth?.isLoggedIn()
 
-    suspend fun changePassword(password: String) {
-        if (isConnected(context)) hunterGamingAuth!!.changePassword(password)
-        else hunterGamingAuth!!.loggedInStatus.emit(LoginState.NoInternet)
+    suspend fun changePassword(): UpdateState {
+
+        if (isConnected(context)) {
+            return hunterGamingAuth!!.resetPassword()
+        }
+        return UpdateState.NO_INTERNET
     }
 
     fun isValidField(value: String) = hunterGamingAuth!!.isValidField(value)

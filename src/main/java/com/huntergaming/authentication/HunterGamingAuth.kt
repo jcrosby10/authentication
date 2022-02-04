@@ -3,6 +3,7 @@ package com.huntergaming.authentication
 import android.content.Context
 import android.util.Log
 import android.util.Patterns
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.ktx.Firebase
@@ -25,47 +26,50 @@ internal class HunterGamingAuth @Inject constructor(
     private val playerRepo: PlayerRepo
 ): Authentication {
 
-    // COMPANION OBJECTS
+    // companion objects
 
     companion object {
         private const val LOG_TAG = "HunterGamingAuth"
     }
 
-    // OVERRIDDEN PROPERTIES
+    // overridden properties
 
+    override val user: FirebaseUser? = Firebase.auth.currentUser
     override val loggedInStatus: MutableStateFlow<LoginState> = MutableStateFlow(LoginState.LoggedOut)
     override val createAccountState: MutableStateFlow<CreateAccountState> = MutableStateFlow(CreateAccountState.Initial)
 
-    // OVERRIDDEN FUNCTIONS
+    // overridden functions
 
     override suspend fun createAccount(name: String, email: String, password: String) {
 
         createAccountState.emit(CreateAccountState.InProgress)
 
         Firebase.auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener {
 
-                when {
-                    it.isSuccessful -> {
-                        CoroutineScope(Dispatchers.IO).launch {
+            .addOnSuccessListener {
+                CoroutineScope(Dispatchers.IO).launch {
 
-                            savePlayer(name, email).collect { state ->
-                                when (state) {
-                                    is DataRequestState.Success<*> -> {
-                                        createAccountState.value = CreateAccountState.AccountCreated
-                                    }
-                                    is DataRequestState.Error -> {
-                                        createAccountState.value = CreateAccountState.Error(context.getString(R.string.error_save_player))
-                                    }
-                                    else -> {}
-                                }
+                    savePlayer(name, email).collect { state ->
+                        when (state) {
+                            is DataRequestState.Success<*> -> {
+                                createAccountState.value = CreateAccountState.AccountCreated
                             }
+                            is DataRequestState.Error -> {
+                                createAccountState.value = CreateAccountState.Error(context.getString(R.string.error_save_player))
+                            }
+                            else -> {}
                         }
                     }
-
-                    it.isCanceled -> createAccountState.value = CreateAccountState.Failed(context.getString(R.string.create_account_canceled))
-                    else -> createAccountState.value = CreateAccountState.Failed(context.getString(R.string.create_account_failed))
                 }
+            }
+
+            .addOnCanceledListener {
+                createAccountState.value = CreateAccountState.Failed(context.getString(R.string.create_account_canceled))
+            }
+
+            .addOnFailureListener {
+                createAccountState.value = CreateAccountState.Failed(context.getString(R.string.create_account_failed))
+                Log.w(LOG_TAG, "Login to Firebase failed " + it.message, it)
             }
     }
 
@@ -74,43 +78,43 @@ internal class HunterGamingAuth @Inject constructor(
         loggedInStatus.emit(LoginState.InProgress)
 
         Firebase.auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
 
-                when {
-                    task.isSuccessful -> {
+            .addOnSuccessListener {
 
-                        if (Firebase.auth.currentUser?.isEmailVerified == true) {
-                            loggedInStatus.value = LoginState.LoggedIn
-                        }
-                        else {
-                            loggedInStatus.value = LoginState.Error(context.getString(R.string.login_not_verified))
-                            Firebase.auth.signOut()
-                        }
-                    }
-
-                    task.isCanceled -> loggedInStatus.value = LoginState.Failed(context.getString(R.string.login_canceled))
-
-                    else -> {
-                        loggedInStatus.value = LoginState.Error(context.getString(R.string.error_login))
-                        Log.w(LOG_TAG, "Login to Firebase failed " + task.exception!!.message!!, task.exception)
-                    }
+                if (Firebase.auth.currentUser?.isEmailVerified == true) {
+                    loggedInStatus.value = LoginState.LoggedIn
                 }
+                else {
+                    loggedInStatus.value = LoginState.Error(context.getString(R.string.login_not_verified))
+                    Firebase.auth.signOut()
+                }
+            }
+
+            .addOnCanceledListener {
+                loggedInStatus.value = LoginState.Failed(context.getString(R.string.login_canceled))
+            }
+
+            .addOnFailureListener {
+                loggedInStatus.value = LoginState.Error(context.getString(R.string.error_login))
+                Log.w(LOG_TAG, "Login to Firebase failed " + it.message, it)
             }
     }
 
     override suspend fun sendVerificationEmail() {
 
         Firebase.auth.currentUser?.sendEmailVerification()
-            ?.addOnCompleteListener {
 
-                when {
-                    it.isSuccessful -> createAccountState.value = CreateAccountState.VerificationSent(context.getString(R.string.create_account_verification_sent))
-                    it.isCanceled -> createAccountState.value = CreateAccountState.Failed(context.getString(R.string.create_account_verification_canceled))
-                    else -> {
-                        createAccountState.value = CreateAccountState.Error(context.getString(R.string.create_account_verification_failed))
-                        Log.e(LOG_TAG, "Sending verification failed " + it.exception!!.message!!, it.exception)
-                    }
-                }
+            ?.addOnSuccessListener {
+                createAccountState.value = CreateAccountState.VerificationSent(context.getString(R.string.create_account_verification_sent))
+            }
+
+            ?.addOnCanceledListener {
+                createAccountState.value = CreateAccountState.Failed(context.getString(R.string.create_account_verification_canceled))
+            }
+
+            ?.addOnFailureListener {
+                createAccountState.value = CreateAccountState.Error(context.getString(R.string.create_account_verification_failed))
+                Log.e(LOG_TAG, "Sending verification failed " + it.message, it)
             }
     }
 
@@ -124,17 +128,17 @@ internal class HunterGamingAuth @Inject constructor(
 
     override fun isLoggedIn(): Boolean = Firebase.auth.currentUser != null
 
-    override suspend fun changePassword(password: String): UpdateState =
+    override suspend fun resetPassword(): UpdateState =
 
         suspendCancellableCoroutine { cont ->
-            Firebase.auth.currentUser?.updatePassword(password)
-                ?.addOnCompleteListener {
-                    if (it.isSuccessful) {
-                        cont.resume(UpdateState.SUCCESS)
-                    }
-                    else {
-                        cont.resume(UpdateState.FAILED)
-                    }
+            Firebase.auth.sendPasswordResetEmail(Firebase.auth.currentUser?.email!!)
+
+                .addOnSuccessListener { cont.resume(UpdateState.SUCCESS) }
+                .addOnCanceledListener { cont.resume(UpdateState.FAILED) }
+
+                .addOnFailureListener {
+                    Log.e(LOG_TAG, "Sending verification failed " + it.message, it)
+                    cont.resume(UpdateState.FAILED)
                 }
         }
 
@@ -145,7 +149,7 @@ internal class HunterGamingAuth @Inject constructor(
     override fun isValidPassword(password: String): Boolean =
         password.isNotEmpty() && password.length >= 10 && password.contains(Regex("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)"))
 
-    // PRIVATE FUNCTIONS
+    // private functions
 
     private suspend fun savePlayer(name: String, email: String): Flow<DataRequestState> = flow {
 
@@ -161,10 +165,11 @@ internal class HunterGamingAuth @Inject constructor(
     }
 }
 
-// INTERFACES/CLASSES
+// interfaces/classes
 
 interface Authentication {
 
+    val user: FirebaseUser?
     val loggedInStatus: MutableStateFlow<LoginState>
     val createAccountState: MutableStateFlow<CreateAccountState>
 
@@ -174,7 +179,7 @@ interface Authentication {
     fun isLoggedIn(): Boolean
     suspend fun logout()
 
-    suspend fun changePassword(password: String): UpdateState
+    suspend fun resetPassword(): UpdateState
 
     fun isValidField(value: String): Boolean
     fun isValidEmail(email: String): Boolean
@@ -205,5 +210,5 @@ sealed class LoginState {
 }
 
 enum class UpdateState {
-    SUCCESS, FAILED
+    SUCCESS, FAILED, NO_INTERNET
 }
