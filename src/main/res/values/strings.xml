@@ -1,11 +1,7 @@
 <resources>
     <string name="title_activity_authentication">AuthenticationActivity</string>
 
-    <string name="dialog_error_title">Error</string>
-    <string name="dialog_title_success">Success</string>
-
     <string name="error_save_player">Your account was created, but there was an error saving your information to the database.</string>
-    <string name="error_no_internet">Please verify that you have a connection to the internet and try again.</string>
     <string name="error_title">ERROR</string>
     <string name="error_sign_out">There was an error signing out. Please try again.</string>
     <string name="error_login">There was an error logging you in. Make sure you are connected to the internet and have verified your email address and try again.</string>
@@ -14,21 +10,13 @@
     <string name="button_login">LOGIN</string>
     <string name="button_ok">OK</string>
 
-    <string name="name_input">Your Name:</string>
-    <string name="email_input">Email Address:</string>
-    <string name="password_input">Password:</string>
-
     <string name="content_description_not_needed">@null</string>
-    <string name="content_description_login">Login</string>
     <string name="content_description_logout">Logout</string>
-    <string name="content_description_create_account">Create Account</string>
 
-    <string name="create_account_verification_sent">An email was sent. Check your email for verification to complete the create account process.</string>
     <string name="create_account_verification_canceled">Sending the verification email was canceled.</string>
     <string name="create_account_verification_failed">Sending the verification email failed.</string>
     <string name="create_account_canceled">Creating your account was canceled.</string>
     <string name="create_account_failed">Creating your account failed.</string>
-    <string name="create_account_password_rules">Passwords must be at least 10 characters, contain at least one lower case letter, at least one upper case letter and at least one number, and at least one special character.</string>
 
     <string name="login_canceled">Login was canceled.</string>
     <string name="login_not_verified">Check your email for to verify your email address before logging in.</string>

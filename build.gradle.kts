@@ -48,7 +48,6 @@ android {
 }
 
 dependencies {
-    implementation(project(mapOf("path" to ":gamedata")))
     implementation(project(mapOf("path" to ":ui")))
     implementation(project(mapOf("path" to ":web")))
 
