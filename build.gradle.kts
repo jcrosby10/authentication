@@ -49,7 +49,6 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":ui")))
-    implementation(project(mapOf("path" to ":web")))
 
     implementation(platform("com.google.firebase:firebase-bom:29.0.3"))
     api("com.google.firebase:firebase-firestore-ktx")
